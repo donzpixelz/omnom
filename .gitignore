@@ -1,0 +1,15 @@
+resources/public/cljs
+resources/public/cljs_http
+resources/public/clojure
+resources/public/cognitect
+resources/public/com
+resources/public/goog
+resources/public/hiccups
+resources/public/no
+resources/public/omnom
+resources/public/main.js
+resources/public/main.js.map
+pom.xml
+pom.xml.asc
+/.lein-*
+/.nrepl

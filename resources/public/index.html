@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Omnom consumer of APIs.">
+  <title>Omnom &ndash; Eater of APIs</title>
+  <link rel="stylesheet" href="https://unpkg.com/purecss@0.6.2/build/pure-min.css" type="text/css"/>
+  <link rel="stylesheet" href="https://unpkg.com/purecss@0.6.2/build/grids-responsive-min.css">
+  <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+  <link rel="stylesheet" href="css/layouts/marketing.css">
+
+  <script>
+    interceptLink = function(e) {
+      var linkElement = e.target || e.srcElement;
+      console.log(linkElement.href);
+      var contentElement = document.getElementById("flibble");
+      omnom.core.omnom(linkElement.href, contentElement);
+      e.preventDefault();
+      return false;
+    };
+  </script>
+</head>
+<body>
+
+  <div class="header">
+      <div class="home-menu pure-menu pure-menu-horizontal pure-menu-fixed">
+          <a class="pure-menu-heading" href="">Omnom - eater of APIs</a>
+          <span><a href="https://github.com/rossputin/omnom">Github</a></span>
+      </div>
+  </div>
+
+  <div class="content-wrapper">
+    <div class="content">
+      <div id="flibble">
+        placeholder for blurb
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="main.js"></script>
+
+</body>
+</html>
