@@ -9,6 +9,7 @@ resources/public/no
 resources/public/omnom
 resources/public/main.js
 resources/public/main.js.map
+target
 pom.xml
 pom.xml.asc
 /.lein-*
