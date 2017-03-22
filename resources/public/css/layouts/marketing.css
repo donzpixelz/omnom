@@ -24,6 +24,15 @@ label {
     color: #34495e;
 }
 
+ol, ul {
+  list-style-type: none;
+  padding-left: 0px;
+}
+
+li {
+  margin-top: 10px;
+}
+
 .pure-img-responsive {
     max-width: 100%;
     height: auto;
