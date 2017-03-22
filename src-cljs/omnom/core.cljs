@@ -24,7 +24,7 @@
 (defn- format-embedded [embedded]
   (mapv #(let [x (get-in % [:_links :self :href])] (-> % (dissoc :_links) (assoc :href x))) embedded))
 
-(defn- format-links [links] (vec (for [[k v] links] {k (:href v)})))
+(defn- format-links [links] (set (for [[k v] links] {k (:href v)})))
 
 (defrecord H1Title [title])
 
@@ -74,9 +74,8 @@
   (hiccup [this]
     (if (empty? this)
       [:div [:span]]
-      [:table
-        [:tbody
-          (for [[i v] (map-indexed vector this)] ^{:key i}[:tr [:td (hiccup v)]])]])))
+      [:ol
+        (for [item this] [:li (hiccup item)])])))
 
 (defrecord JSONHal [media-type])
 
