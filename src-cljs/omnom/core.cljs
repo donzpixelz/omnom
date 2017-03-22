@@ -9,11 +9,12 @@
 
 (def uri-regex
   (re-pattern "(\\b(https?)://[-A-Za-z0-9+&@#/%?{}=~_|!:,.;]*[-A-Za-z0-9+&@#/%=~_|{}])"))
+  ;; TODO fix relative pattern (re-pattern "(\\b/[-A-Za-z0-9+&@#/%?{}=~_|!:,.;]*[-A-Za-z0-9+&@#/%=~_|{}])"))
 
 (defn- escape-html [s]
   (escape s {"&"  "&amp;" ">"  "&gt;" "<"  "&lt;" "\"" "&quot;"}))
 
-(defn- slurp [uri] (get uri {:with-credentials? false}))
+(defn- slurp [uri] (get uri {:with-credentials? false :headers {"Authorization" "Bearer: xxxx"}}))
 
 (defn- parse [json] (.parse js/JSON json))
 
@@ -87,14 +88,13 @@
     (let [tidied (postwalk #(if (map? %) (dissoc % :templated) %) json)
           title (get-in tidied [:_links :self :href])
           entity (dissoc tidied :_links :_embedded)
-          [embed-title embed-xs] (first (:_embedded tidied))
           links (dissoc (:_links tidied) :self)]
       [:div
         (hiccup (->H1Title title))
         (hiccup entity)
-        (hiccup (->H2Title embed-title))
-        (hiccup (format-embedded embed-xs))
         (hiccup (->H2Title "links"))
+        (for [[embed-title embed-xs] (:_embedded tidied)]
+          (hiccup [(->H2Title embed-title) (format-embedded embed-xs)]))
         (hiccup (format-links links))])))
 
 (defn ^:export omnom [uri el]
