@@ -33,6 +33,10 @@ li {
   margin-top: 10px;
 }
 
+a {
+  word-break: break-word;  /* For Chrome and Safari */
+}
+
 .pure-img-responsive {
     max-width: 100%;
     height: auto;
