@@ -2,35 +2,37 @@
   (:require [clojure.string :refer [blank? escape join replace]]
             [clojure.walk :refer [postwalk]]
             [cljs.core.async :refer [<!]]
-            [cljs-http.client :as http :refer [get]]
+            [cljs-http.client :as http]
             [hiccups.runtime :as hiccupsrt])
   (:require-macros [cljs.core.async.macros :refer [go]]
                    [hiccups.core :as hiccups]))
 
-(def uri-regex
-  (re-pattern "(\\b(https?)://[-A-Za-z0-9+&@#/%?{}=~_|!:,.;]*[-A-Za-z0-9+&@#/%=~_|{}])"))
-
 (defn- escape-html [s]
   (escape s {"&"  "&amp;" ">"  "&gt;" "<"  "&lt;" "\"" "&quot;"}))
 
-(defn- slurp [uri] (get uri {:with-credentials? false :headers {"Authorization" "Bearer: xxxx"}}))
+(defn- slurp [uri] (http/get uri {:with-credentials? false}))
 
 (defn- parse [json] (.parse js/JSON json))
 
 (defn- clj [json] (js->clj (parse json) :keywordize-keys true))
 
-(defn- intercept-links [uri]
-  (replace uri uri-regex "<a href=\"?api=$1\">$1</a>"))
+(defn- format-embedded [embedded host]
+  (mapv
+    #(let [x (get-in % [:_links :self :href])]
+      (-> % (dissoc :_links) (assoc :href (->Link x host))))
+    embedded))
 
-(defn- format-embedded [embedded]
-  (mapv #(let [x (get-in % [:_links :self :href])] (-> % (dissoc :_links) (assoc :href x))) embedded))
+(defn- format-links [links host]
+  (set (for [[k v] links] {k (->Link (:href v) host)})))
 
-(defn- format-links [links]
-  (set (for [[k v] links] {k (:href v)})))
+(defn create-link [host path]
+  (if (and (not (nil? path)) (.startsWith path "/")) (str host path) path))
 
-(defrecord H1Title [title])
+(defrecord H1LinkTitle [title host])
 
 (defrecord H2Title [title])
+
+(defrecord Link [title host])
 
 (defprotocol Hiccup (hiccup [this] "Hiccup markup"))
 
@@ -38,11 +40,14 @@
   nil
   (hiccup [_] [:span nil])
 
-  H1Title
-  (hiccup [this] [:h1 (:title this)])
+  H1LinkTitle
+  (hiccup [{:keys [title host]}] [:h1 [:a {:href (str "?api=" (create-link host title))} title]])
 
   H2Title
   (hiccup [this] [:h2 (:title this)])
+
+  Link
+  (hiccup [{:keys [title host]}] [:a {:href (str "?api=" (create-link host title))} title])
 
   js/Boolean
   (hiccup [this] [:span (str this)])
@@ -81,29 +86,25 @@
 
 (defrecord JSONHal [media-type])
 
-(defprotocol Barf (barf [this json] "Media Type independent markup barfing"))
+(defprotocol Barf (barf [this json host] "Media Type independent markup barfing"))
 
 (extend-protocol Barf
   JSONHal
-  (barf [_ json]
+  (barf [_ json host]
     (let [tidied (postwalk #(if (map? %) (dissoc % :templated) %) json)
           title (get-in tidied [:_links :self :href])
           entity (dissoc tidied :_links :_embedded)
           links (dissoc (:_links tidied) :self)]
       [:div
-        (hiccup (->H1Title title))
+        (hiccup (->H1LinkTitle title host))
         (hiccup entity)
         (for [[embed-title embed-xs] (:_embedded tidied)]
-          (hiccup [(->H2Title embed-title) (format-embedded embed-xs)]))
+          (hiccup [(->H2Title embed-title) (format-embedded embed-xs host)]))
         (hiccup (->H2Title "links"))
-        (hiccup (format-links links))])))
+        (hiccup (format-links links host))])))
 
-
-(defn ^:export omnom [uri el]
-  (println "calling omnom")
-  (println "uri : " uri)
-  (println "el : " el)
+(defn ^:export omnom [uri el host]
   (go (let [rsp (<! (slurp uri))
             ;; TODO: dispatch on media type here for barfing
-            mkup (barf (->JSONHal "hal+json") (:body rsp))]
-        (set! (.-innerHTML el) (-> mkup hiccups/html intercept-links)))))
+            mkup (barf (->JSONHal "hal+json") (:body rsp) host)]
+    (set! (.-innerHTML el) (-> mkup hiccups/html)))))

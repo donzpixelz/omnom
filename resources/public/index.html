@@ -17,10 +17,10 @@
         <li class="pure-menu-item"><a href="#" class="pure-menu-link pure-menu-heading">Omnom - eater of APIs</a></li>
         <li class="pure-menu-item"><a target="_blank" href="https://github.com/rossputin/omnom" class="pure-menu-link">Github</a></li>
         <li class="pure-menu-item">
-          <form class="pure-form">
+          <form id="form" class="pure-form">
             <fieldset>
-              <input class="pure-input-1" id="start-url" name="api" placeholder="http://" >
-              <button type="submit" class="pure-button pure-button-primary">Explore</button>
+              <input class="pure-input-1" id="start-point" name="api" placeholder="http://path/to/api" required>
+              <button id="button" type="submit" class="pure-button pure-button-primary">Explore</button>
             </fieldset>
           </form>
         </li>
@@ -30,7 +30,7 @@
   <div class="content-wrapper">
     <div class="content">
       <div id="flibble">
-        Enter the uri for your api and hit explore
+        Enter the starting point of your API and hit explore.
       </div>
     </div>
   </div>
