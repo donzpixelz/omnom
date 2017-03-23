@@ -93,10 +93,11 @@
       [:div
         (hiccup (->H1Title title))
         (hiccup entity)
-        (hiccup (->H2Title "links"))
         (for [[embed-title embed-xs] (:_embedded tidied)]
           (hiccup [(->H2Title embed-title) (format-embedded embed-xs)]))
+        (hiccup (->H2Title "links"))
         (hiccup (format-links links))])))
+
 
 (defn ^:export omnom [uri el]
   (println "calling omnom")
