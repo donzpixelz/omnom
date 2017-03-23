@@ -9,7 +9,6 @@
 
 (def uri-regex
   (re-pattern "(\\b(https?)://[-A-Za-z0-9+&@#/%?{}=~_|!:,.;]*[-A-Za-z0-9+&@#/%=~_|{}])"))
-  ;; TODO fix relative pattern (re-pattern "(\\b/[-A-Za-z0-9+&@#/%?{}=~_|!:,.;]*[-A-Za-z0-9+&@#/%=~_|{}])"))
 
 (defn- escape-html [s]
   (escape s {"&"  "&amp;" ">"  "&gt;" "<"  "&lt;" "\"" "&quot;"}))
@@ -20,12 +19,14 @@
 
 (defn- clj [json] (js->clj (parse json) :keywordize-keys true))
 
-(defn- intercept-links [uri] (replace uri uri-regex "<a href=$1 onclick=interceptLink(event);>$1</a>"))
+(defn- intercept-links [uri]
+  (replace uri uri-regex "<a href=\"?api=$1\">$1</a>"))
 
 (defn- format-embedded [embedded]
   (mapv #(let [x (get-in % [:_links :self :href])] (-> % (dissoc :_links) (assoc :href x))) embedded))
 
-(defn- format-links [links] (set (for [[k v] links] {k (:href v)})))
+(defn- format-links [links]
+  (set (for [[k v] links] {k (:href v)})))
 
 (defrecord H1Title [title])
 

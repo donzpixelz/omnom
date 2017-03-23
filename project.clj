@@ -5,8 +5,8 @@
                  [hiccup "1.0.5"]
                  [hiccups "0.3.0"]
                  [cheshire "5.6.1"]
-                 [cljs-http "0.1.42"]]
-
+                 [cljs-http "0.1.42"]
+                 [com.cemerick/url "0.1.1"]]
   :clojurescript? true
   :jar-exclusions [#"\.swp|\.swo|\.DS_Store"]
   :plugins [[lein-cljsbuild "1.1.3"]]

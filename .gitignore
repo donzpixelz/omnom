@@ -1,3 +1,4 @@
+resources/public/cemerick
 resources/public/cljs
 resources/public/cljs_http
 resources/public/clojure
@@ -7,6 +8,7 @@ resources/public/goog
 resources/public/hiccups
 resources/public/no
 resources/public/omnom
+resources/public/pathetic
 resources/public/main.js
 resources/public/main.js.map
 target
