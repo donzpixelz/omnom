@@ -100,31 +100,28 @@ a.pure-button-primary {
 
 /*
  * -- MENU STYLES --
- * I want to customize how my .pure-menu looks at the top of the page
+ * I want to customize how my .home-menu looks at the top of the page
  */
 
 .home-menu {
     padding: 0.5em;
-    text-align: center;
     box-shadow: 0 1px 1px rgba(0,0,0, 0.10);
-}
-.home-menu {
     background: #2d3e50;
 }
-.pure-menu.pure-menu-fixed {
+.home-menu .home-menu-fixed {
     /* Fixed menus normally have a border at the bottom. */
     border-bottom: none;
     /* I need a higher z-index here because of the scroll-over effect. */
     z-index: 4;
 }
 
-.home-menu .pure-menu-heading {
+.home-menu .home-menu-heading {
     color: white;
     font-weight: 400;
     font-size: 120%;
 }
 
-.home-menu .pure-menu-selected a {
+.home-menu .home-menu-selected a {
     color: white;
 }
 
@@ -210,12 +207,13 @@ a.pure-button-primary {
 
     /* We can align the menu header to the left, but float the
     menu items to the right. */
-    .home-menu {
+    /*.home-menu {
         text-align: left;
     }
-        .home-menu ul {
-            float: right;
-        }
+
+    .home-menu ul {
+        float: right;
+    }*/
 
     /* We increase the height of the splash-container */
 /*    .splash-container {

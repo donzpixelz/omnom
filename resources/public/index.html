@@ -13,14 +13,24 @@
 <body>
   <div class="header">
     <div class="home-menu pure-menu pure-menu-horizontal pure-menu-fixed">
-      <a class="pure-menu-heading" href="">Omnom - eater of APIs</a>
-      <span><a href="https://github.com/rossputin/omnom">Github</a></span>
+      <ul class="pure-menu-list">
+        <li class="pure-menu-item"><a href="#" class="pure-menu-link pure-menu-heading">Omnom - eater of APIs</a></li>
+        <li class="pure-menu-item"><a target="_blank" href="https://github.com/rossputin/omnom" class="pure-menu-link">Github</a></li>
+        <li class="pure-menu-item">
+          <form class="pure-form">
+            <fieldset>
+              <input class="pure-input-1" id="start-url" name="api" placeholder="http://" >
+              <button type="submit" class="pure-button pure-button-primary">Explore</button>
+            </fieldset>
+          </form>
+        </li>
+      </ul>
     </div>
   </div>
   <div class="content-wrapper">
     <div class="content">
       <div id="flibble">
-        placeholder for blurb
+        Enter the uri for your api and hit explore
       </div>
     </div>
   </div>
