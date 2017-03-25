@@ -1,8 +1,9 @@
 (ns omnom.core
-  (:require [clojure.string :refer [blank? escape join replace]]
+  (:require [clojure.string :refer [blank? escape join replace split]]
             [clojure.walk :refer [postwalk]]
             [cljs.core.async :refer [<!]]
             [cljs-http.client :as http]
+            [cemerick.url :as url]
             [hiccups.runtime :as hiccupsrt])
   (:require-macros [cljs.core.async.macros :refer [go]]
                    [hiccups.core :as hiccups]))
@@ -23,10 +24,20 @@
     embedded))
 
 (defn- format-links [links host]
-  (set (for [[k v] links] {k (->Link (:href v) host)})))
+  (let [curies (:curies links)
+        c-link (fn [a b]
+                (let [href (get-in (filterv #(= (:name %) a) curies) [0 :href])]
+                  (replace href "{rel}" b)))
+        items (for [[k v] (dissoc links :curies)]
+                (let [[a b] (split (name k) #":")]
+                  (if b
+                    {b (->Link (c-link a (:href v)) host)}
+                    {k (->Link (:href v) host)})))]
+   (set items)))
 
 (defn create-link [host path]
-  (if (and (not (nil? path)) (.startsWith path "/")) (str host path) path))
+  (url/url-encode
+    (if (and (not (nil? path)) (.startsWith path "/")) (str host path) path)))
 
 (defrecord H1LinkTitle [title host])
 
