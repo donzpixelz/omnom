@@ -13,9 +13,9 @@
 
 (defn- slurp [uri] (http/get uri {:with-credentials? false}))
 
-(defn- parse [json] (.parse js/JSON json))
+; (defn- parse [json] (.parse js/JSON json))
 
-(defn- clj [json] (js->clj (parse json) :keywordize-keys true))
+; (defn- clj [json] (js->clj (parse json) :keywordize-keys true))
 
 (defn- format-embedded [embedded host]
   (mapv
