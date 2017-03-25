@@ -125,7 +125,7 @@
 (defn ^:export omnom [uri el host]
   (go (let [rsp (<! (slurp uri))
             ;; TODO: dispatch on media type here for barfing
-            mkup (if (<= 200 (:status rsp) 299)
+            mkup (if (get http/unexceptional-status? (:status rsp))
                    (barf (->JSONHal "hal+json") (:body rsp) host)
                    (barf (->Error "hal+json") (:body rsp) (:status rsp)))]
     (set! (.-innerHTML el) (-> mkup hiccups/html)))))
