@@ -112,7 +112,8 @@
         (hiccup (->H1LinkTitle title host))
         (hiccup entity)
         (for [[embed-title embed-xs] (:_embedded tidied)]
-          (hiccup [(->H2Title embed-title) (format-embedded embed-xs host)]))
+          (hiccup [(->H2Title (.substring (str embed-title) 1)) ; (name :zones/1/properties) returns zones
+                   (format-embedded embed-xs host)]))
         (hiccup (->H2Title "links"))
         (hiccup (format-links links host))]))
 
