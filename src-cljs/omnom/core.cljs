@@ -97,6 +97,8 @@
 
 (defrecord JSONHal [media-type])
 
+(defrecord Error [media-type])
+
 (defprotocol Barf (barf [this json host] "Media Type independent markup barfing"))
 
 (extend-protocol Barf
@@ -112,10 +114,18 @@
         (for [[embed-title embed-xs] (:_embedded tidied)]
           (hiccup [(->H2Title embed-title) (format-embedded embed-xs host)]))
         (hiccup (->H2Title "links"))
-        (hiccup (format-links links host))])))
+        (hiccup (format-links links host))]))
+
+  Error
+  (barf [_ json status]
+    [:div
+      [:div {:class "error"} (str "Ooops a " status " was returned")]
+      (hiccup json)]))
 
 (defn ^:export omnom [uri el host]
   (go (let [rsp (<! (slurp uri))
             ;; TODO: dispatch on media type here for barfing
-            mkup (barf (->JSONHal "hal+json") (:body rsp) host)]
+            mkup (if (<= 200 (:status rsp) 299)
+                   (barf (->JSONHal "hal+json") (:body rsp) host)
+                   (barf (->Error "hal+json") (:body rsp) (:status rsp)))]
     (set! (.-innerHTML el) (-> mkup hiccups/html)))))
