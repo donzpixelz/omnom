@@ -12,6 +12,19 @@
 
 (defn- slurp [uri] (http/get uri {:with-credentials? false}))
 
+(defn- augmented-slurp [uri augmented-requests]
+  (println "augmented-requests : " augmented-requests)
+  (if-let [aug-req (first augmented-requests)] ;; TODO: currently handles only one augemted request
+    (let [clj (js->clj (parse (:body aug-req)))]
+      (println "clj : " clj)
+      (println "uri : " uri)
+      (println "actual extracted uri : " (:path uri))
+      (println "augmented uri : " (:uri aug-req))
+      (if (re-seq #"match" (:path uri))
+        (http/post (:uri aug-req) {:json-params clj :with-credentials? false})
+        (slurp uri))) ;; hackety hack adding trailing slash
+    (slurp uri)))
+
 (defn- parse [json] (.parse js/JSON json))
 
 (defn- clj [json] (js->clj (parse json) :keywordize-keys true))
@@ -104,7 +117,10 @@
         (hiccup (format-links links host))])))
 
 (defn ^:export omnom [uri el host]
-  (go (let [rsp (<! (slurp uri))
+  (go (let [analysis (:body (<! (slurp "http://localhost:3001/services/ho/analysis")))
+            aug-req (filter #(:body %) analysis)
+            rsp (<! (augmented-slurp uri aug-req))
             ;; TODO: dispatch on media type here for barfing
             mkup (barf (->JSONHal "hal+json") (:body rsp) host)]
-    (set! (.-innerHTML el) (-> mkup hiccups/html)))))
+        (println "analysis : " aug-req)
+        (set! (.-innerHTML el) (-> mkup hiccups/html)))))
