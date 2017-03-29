@@ -1,8 +1,10 @@
 (ns omnom.core
-  (:require [clojure.string :refer [blank? escape join replace]]
+  (:require [clojure.data :refer [diff]]
+            [clojure.string :refer [blank? escape join lower-case replace split]]
             [clojure.walk :refer [postwalk]]
             [cljs.core.async :refer [<!]]
             [cljs-http.client :as http]
+            [cemerick.url :as url]
             [hiccups.runtime :as hiccupsrt])
   (:require-macros [cljs.core.async.macros :refer [go]]
                    [hiccups.core :as hiccups]))
@@ -12,22 +14,23 @@
 
 (defn- slurp [uri] (http/get uri {:with-credentials? false}))
 
-(defn- augmented-slurp [uri augmented-requests]
-  (println "augmented-requests : " augmented-requests)
-  (if-let [aug-req (first augmented-requests)] ;; TODO: currently handles only one augemted request
-    (let [clj (js->clj (parse (:body aug-req)))]
-      (println "clj : " clj)
-      (println "uri : " uri)
-      (println "actual extracted uri : " (:path uri))
-      (println "augmented uri : " (:uri aug-req))
-      (if (re-seq #"match" (:path uri))
-        (http/post (:uri aug-req) {:json-params clj :with-credentials? false})
-        (slurp uri))) ;; hackety hack adding trailing slash
-    (slurp uri)))
-
 (defn- parse [json] (.parse js/JSON json))
 
-(defn- clj [json] (js->clj (parse json) :keywordize-keys true))
+(defn- uri-match? [u1 u2]
+  (let [[left right both] (diff (rest (split u1 #"/")) (rest (split u2 #"/")))]
+    (if (or (not= (count left) (count right)) (> (- (count left) (count right)) 1))
+      false
+      true)))
+
+(defn- augmented-slurp [uri name augmented-requests]
+  (let [xs (filter #(uri-match? (url/url (:uri %)) uri) augmented-requests)
+        ys (if name
+              (filter #(= (lower-case (:method %)) (lower-case name)) xs)
+              xs)]
+    (if-let [aug-req (first ys)]
+      (let [clj (js->clj (parse (:body aug-req)))]
+        (http/post (:uri aug-req) {:json-params clj :with-credentials? false}))
+      (slurp uri))))
 
 (defn- format-embedded [embedded host]
   (mapv
@@ -36,16 +39,26 @@
     embedded))
 
 (defn- format-links [links host]
-  (set (for [[k v] links] {k (->Link (:href v) host)})))
+  (let [curies (:curies links)
+        c-link (fn [a b]
+                (let [href (get-in (filterv #(= (:name %) a) curies) [0 :href])]
+                  (replace href "{rel}" b)))
+        items (for [[k v] (dissoc links :curies)]
+                (let [[a b] (split (name k) #":")]
+                  (if b
+                    {b (->Link (c-link a (:href v)) host a (:name v) (:title v))}
+                    {k (->Link (:href v) host a (:name v) (:title v))})))]
+   (set items)))
 
 (defn create-link [host path]
-  (if (and (not (nil? path)) (.startsWith path "/")) (str host path) path))
+  (url/url-encode
+    (if (and (not (nil? path)) (.startsWith path "/")) (str host path) path)))
 
 (defrecord H1LinkTitle [title host])
 
 (defrecord H2Title [title])
 
-(defrecord Link [title host])
+(defrecord Link [title host rel name title-attr])
 
 (defprotocol Hiccup (hiccup [this] "Hiccup markup"))
 
@@ -60,7 +73,7 @@
   (hiccup [this] [:h2 (:title this)])
 
   Link
-  (hiccup [{:keys [title host]}] [:a {:href (str "?api=" (create-link host title))} title])
+  (hiccup [{:keys [title host name title-attr]}] [:a {:href (str "?api=" (create-link host title) "&name=" name) :data-name name :title title-attr} title])
 
   js/Boolean
   (hiccup [this] [:span (str this)])
@@ -99,6 +112,8 @@
 
 (defrecord JSONHal [media-type])
 
+(defrecord Error [media-type])
+
 (defprotocol Barf (barf [this json host] "Media Type independent markup barfing"))
 
 (extend-protocol Barf
@@ -112,15 +127,23 @@
         (hiccup (->H1LinkTitle title host))
         (hiccup entity)
         (for [[embed-title embed-xs] (:_embedded tidied)]
-          (hiccup [(->H2Title embed-title) (format-embedded embed-xs host)]))
+          (hiccup [(->H2Title (.substring (str embed-title) 1)) ; (name :zones/1/properties) returns zones
+                   (format-embedded embed-xs host)]))
         (hiccup (->H2Title "links"))
-        (hiccup (format-links links host))])))
+        (hiccup (format-links links host))]))
 
-(defn ^:export omnom [uri el host]
+  Error
+  (barf [_ json status]
+    [:div
+      [:div {:class "error"} (str "Ooops a " status " was returned")]
+      (hiccup json)]))
+
+(defn ^:export omnom [uri name el host]
   (go (let [analysis (:body (<! (slurp "http://localhost:3001/services/ho/analysis")))
             aug-req (filter #(:body %) analysis)
-            rsp (<! (augmented-slurp uri aug-req))
+            rsp (<! (augmented-slurp uri name aug-req))
             ;; TODO: dispatch on media type here for barfing
-            mkup (barf (->JSONHal "hal+json") (:body rsp) host)]
-        (println "analysis : " aug-req)
+            mkup (if (get http/unexceptional-status? (:status rsp))
+                   (barf (->JSONHal "hal+json") (:body rsp) host)
+                   (barf (->Error "hal+json") (:body rsp) (:status rsp)))]
         (set! (.-innerHTML el) (-> mkup hiccups/html)))))
