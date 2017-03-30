@@ -15,8 +15,10 @@
 
 (defn- name2
   "Changes keyword to string but respects backslashes"
-  [path]
-  (.substring (str path) 1))
+  [k]
+  (if (keyword? k) (.substring (str k) 1) k))
+
+(defn- field-title [title] (replace (name2 title) #"[-_]" " "))
 
 ; (defn- parse [json] (.parse js/JSON json))
 
@@ -29,16 +31,15 @@
     embedded))
 
 (defn- format-links [links host]
-  (let [curies (:curies links)
-        c-link (fn [a b]
-                (let [href (get-in (filterv #(= (:name %) a) curies) [0 :href])]
-                  (replace href "{rel}" b)))
-        items (for [[k v] (dissoc links :curies)]
-                (let [[a b] (split (name k) #":")]
-                  (if b
-                    {b (->Link (c-link a (:href v)) host)}
-                    {k (->Link (:href v) host)})))]
-   (set items)))
+  (defn c-link [a b]
+    (let [href (get-in (filterv #(= (:name %) a) (:curies links)) [0 :href])]
+      (replace href "{rel}" b)))
+  (set
+    (for [[k v] (dissoc links :curies)]
+      (let [[a b] (split (name2 k) #":")]
+        (if b
+          {(field-title b) (->Link (c-link a (:href v)) host)}
+          {(field-title k) (->Link (:href v) host)})))))
 
 (defn create-link [host path]
   (url/url-encode
@@ -85,7 +86,9 @@
     (if (empty? this)
       [:div [:span]]
       [:table {:class "pure-table"}
-        [:tbody (for [[k v] this] ^{:key k}[:tr [:th (hiccup k)] [:td (hiccup v)]])]]))
+        [:tbody (for [[k v] this]
+                  ^{:key k}[:tr [:th (hiccup (field-title k))]
+                                [:td (hiccup v)]])]]))
 
   PersistentHashSet
   (hiccup [this]
