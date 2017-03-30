@@ -9,4 +9,4 @@ A dynamic webapp HATEOAS client written in Clojurescript.
 
 Currently only Google Chrome compatible.
 
-Currently requires a ![Protean](https://github.com/passivsystems/protean) instance running on port 3000/3001 to run.
+Currently requires a [Protean](https://github.com/passivsystems/protean) instance running on port 3000/3001 to run.
