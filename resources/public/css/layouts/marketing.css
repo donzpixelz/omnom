@@ -5,7 +5,7 @@
 body {
   line-height: 1.7em;
   color: #7f8c8d;
-  font-size: 13px;
+  font-size: 14px;
 }
 h1, h2, h3, h4, h5, h6, label {
   color: #34495e;
@@ -80,13 +80,13 @@ a {
   color: white;
 }
 .home-menu a {
-  color: #6FBEF3;
+    color: white;
 }
 .home-menu li a:hover,
 .home-menu li a:focus {
   background: none;
   border: none;
-  color: #AECFE5;
+  color: white;
 }
 .home-menu input {
   width: 800px;
@@ -97,6 +97,7 @@ a {
 .home-menu .pure-menu-input {
   float: right !important;
 }
+
 /*
  * -- CONTENT STYLES --
  * This represents the content area (everything below the blue section)
