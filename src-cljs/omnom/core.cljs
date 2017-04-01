@@ -35,8 +35,14 @@
               (filter #(= (lower-case (:method %)) (lower-case name)) xs)
               xs)]
     (if-let [aug-req (first ys)]
-      (let [clj (js->clj (parse (:body aug-req)))]
-        (http/post (:uri aug-req) {:json-params clj :with-credentials? false}))
+      (let [clj (js->clj (parse (:body aug-req)))
+            req {:json-params clj :with-credentials? false}]
+        (cond
+          (= (lower-case name) "delete") (http/delete (:uri aug-req) req)
+          (= (lower-case name) "patch")  (http/patch (:uri aug-req) req)
+          (= (lower-case name) "post")   (http/post (:uri aug-req) req)
+          (= (lower-case name) "put")    (http/put (:uri aug-req) req)
+          :else             (http/get (:uri aug-req) req)))
       (slurp uri))))
 
 (defn- format-embedded [embedded host]
@@ -49,13 +55,28 @@
   (let [href (get-in (filterv #(= (:name %) a) (:curies links)) [0 :href])]
     (replace href "{rel}" b)))
 
+(defn- get-method
+  "Walks map and checks if keys or values specify an other HTTP method to 'GET'"
+  [map]
+  (defn find-methods [m]
+    (let [methods {"delete" "post" "put" "patch"}]
+      (for [[k v] m]
+        (cond
+          (get methods (lower-case (name k))) (lower-case (name k))
+          (map? v)                            (find-methods v)
+          (get methods (lower-case v))        (lower-case v)
+          :else                               Nil))))
+  (if-let [method (first (remove nil? (flatten (find-methods map))))]
+    method
+    "get"))
+
 (defn- format-links [links host]
   (set
     (for [[k v] (dissoc links :curies)]
       (let [[a b] (split (name2 k) #":")]
         (if b
-          {(field-title b) (->Link (curie-link a (:href v) links) host a (:name v) (:title v))}
-          {(field-title k) (->Link (:href v) host a (:name v) (:title v))})))))
+          {(field-title b) (->Link (curie-link a (:href v) links) host a (get-method links) (:title v))}
+          {(field-title k) (->Link (:href v) host a (get-method links) (:title v))})))))
 
 (defn create-link [host path]
   (url/url-encode
@@ -74,13 +95,17 @@
   (hiccup [_] [:span nil])
 
   H1LinkTitle
-  (hiccup [{:keys [title host]}] [:h1 [:a {:href (str "?api=" (create-link host title))} title]])
+  (hiccup
+    [{:keys [title host]}]
+    [:h1 [:a {:href (str "?api=" (create-link host title))} title]])
 
   H2Title
   (hiccup [this] [:h2 (:title this)])
 
   Link
-  (hiccup [{:keys [title host name title-attr]}] [:a {:href (str "?api=" (create-link host title) "&name=" name) :data-name name :title title-attr} title])
+  (hiccup
+    [{:keys [title host name title-attr]}]
+    [:a {:href (str "?api=" (create-link host title) "&name=" name) :title title-attr} title])
 
   js/Boolean
   (hiccup [this] [:span (str this)])
@@ -148,11 +173,13 @@
       (hiccup json)]))
 
 (defn ^:export omnom [uri name el host]
-  (go (let [analysis (:body (<! (slurp "http://localhost:3001/services/ho/analysis")))
+  (go (let [[_ api] (split (:path (url/url uri)) #"/")
+            analysis (:body (<! (slurp (str "http://localhost:3001/services/" api "/analysis"))))
             aug-req (filter #(:body %) analysis)
             rsp (<! (augmented-slurp uri name aug-req))
             ;; TODO: dispatch on media type here for barfing
-            mkup (if (get http/unexceptional-status? (:status rsp))
-                   (barf (->JSONHal "hal+json") (:body rsp) host)
-                   (barf (->Error "hal+json") (:body rsp) (:status rsp)))]
+            mkup (cond
+                   (= (:status rsp) 204)                          (-> js/window .-history .back)
+                   (get http/unexceptional-status? (:status rsp)) (barf (->JSONHal "hal+json") (:body rsp) host)
+                   :else                                          (barf (->Error "hal+json") (:body rsp) (:status rsp)))]
         (set! (.-innerHTML el) (-> mkup hiccups/html)))))
