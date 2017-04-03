@@ -22,14 +22,23 @@
       false
       true)))
 
+(defn- write?[x] (some #{x} #{"post" "put" "patch" "delete"}))
+
 (defn- augmented-slurp [uri name augmented-requests]
+  (println "name : " name)
+  (println "augmented requests : " augmented-requests)
   (let [xs (filter #(uri-match? (url/url (:uri %)) uri) augmented-requests)
-        ys (if name
-              (filter #(= (lower-case (:method %)) (lower-case name)) xs)
-              xs)]
+        ys (if name (filter #(= (lower-case (:method %)) (lower-case name)) xs) xs)]
+    (println "xs : " xs)
+    (println "filtered aug requests : " ys)
     (if-let [aug-req (first ys)]
-      (let [clj (js->clj (parse (:body aug-req)))]
-        (http/post (:uri aug-req) {:json-params clj :with-credentials? false}))
+      (if (some #{(lower-case (or name "na"))} #{"post" "put" "patch" "delete"})
+        (let [clj (js->clj (parse (:body aug-req)))]
+          (println "augmented request : " aug-req)
+          (http/post (:uri aug-req) {:json-params clj :with-credentials? false :headers {"Authorization" "BearerXYZ"}})) ;; TODO: add header from aug
+        (http/get uri {:with-credentials? false :headers {"Authorization" "BearerXYZ"}})
+        )
+
       (slurp uri))))
 
 (defn- format-embedded [embedded host]
@@ -140,8 +149,8 @@
 
 (defn ^:export omnom [uri name el host]
   (go (let [analysis (:body (<! (slurp "http://localhost:3001/services/ho/analysis")))
-            aug-req (filter #(:body %) analysis)
-            rsp (<! (augmented-slurp uri name aug-req))
+            ;; aug-req (filter #(:body %) analysis)
+            rsp (<! (augmented-slurp uri name analysis))
             ;; TODO: dispatch on media type here for barfing
             mkup (if (get http/unexceptional-status? (:status rsp))
                    (barf (->JSONHal "hal+json") (:body rsp) host)
