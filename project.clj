@@ -12,7 +12,7 @@
   :plugins [[lein-cljsbuild "1.1.3"]]
   :hooks [leiningen.cljsbuild]
   :cljsbuild {
-    :builds [{:source-paths ["src-cljs"]
+    :builds [{:source-paths ["src/cljs"]
               :compiler {:output-to "resources/public/main.js"
                          :output-dir "resources/public"
                          :optimizations :simple
