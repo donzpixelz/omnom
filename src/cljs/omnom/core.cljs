@@ -14,6 +14,13 @@
 
 (defn- slurp [uri] (http/get uri {:with-credentials? false}))
 
+(defn- name2
+  "Changes keyword to string but respects backslashes"
+  [k]
+  (if (keyword? k) (.substring (str k) 1) k))
+
+(defn- field-title [title] (replace (name2 title) #"[-_]" " "))
+
 (defn- parse [json] (.parse js/JSON json))
 
 (defn- uri-match? [u1 u2]
@@ -22,7 +29,7 @@
       false
       true)))
 
-(def http-methods {"get" http/get "post" http/post "put" http/put "patch" http/patch})
+(def http-methods {"get" http/get "delete" http/delete "post" http/post "put" http/put "patch" http/patch})
 
 (defn- augmented-slurp [uri name augmented-requests]
   (let [xs (filter #(uri-match? (url/url (:uri %)) uri) augmented-requests)
@@ -37,21 +44,37 @@
 
 (defn- format-embedded [embedded host]
   (mapv
-    #(let [x (get-in % [:_links :self :href])]
-      (-> % (dissoc :_links) (assoc :href (->Link x host))))
+    #(let [t (get-in % [:_links :self :title])
+           x (get-in % [:_links :self :href])]
+      (-> % (dissoc :_links) (assoc :href (->Link x host "get" t))))
     embedded))
 
+(defn- curie-link [a b links]
+  (let [href (get-in (filterv #(= (:name %) a) (:curies links)) [0 :href])]
+    (replace href "{rel}" b)))
+
+(defn- get-method
+  "Walks map and checks if keys or values specify an other HTTP method to 'GET'"
+  [map]
+  (defn find-methods [m]
+      (for [[k v] m]
+        (cond
+          (get http-methods (lower-case (name k))) (lower-case (name k))
+          (map? v)                                 (find-methods v)
+          (sequential? v)                          (mapv #(find-methods %) v)
+          (get http-methods (lower-case v))        (lower-case v)
+          :else                                    Nil)))
+  (if-let [method (first (remove nil? (flatten (find-methods map))))]
+    method
+    "get"))
+
 (defn- format-links [links host]
-  (let [curies (:curies links)
-        c-link (fn [a b]
-                (let [href (get-in (filterv #(= (:name %) a) curies) [0 :href])]
-                  (replace href "{rel}" b)))
-        items (for [[k v] (dissoc links :curies)]
-                (let [[a b] (split (name k) #":")]
-                  (if b
-                    {b (->Link (c-link a (:href v)) host a (:name v) (:title v))}
-                    {k (->Link (:href v) host a (:name v) (:title v))})))]
-   (set items)))
+  (set
+    (for [[k v] (dissoc links :curies)]
+      (let [[a b] (split (name2 k) #":")]
+        (if b
+          {(field-title b) (->Link (curie-link a (:href v) links) host (get-method links) (:title v))}
+          {(field-title k) (->Link (:href v)                      host (get-method {k v}) (:title v))})))))
 
 (defn create-link [host path]
   (url/url-encode
@@ -61,7 +84,7 @@
 
 (defrecord H2Title [title])
 
-(defrecord Link [title host rel name title-attr])
+(defrecord Link [title host name title-attr])
 
 (defprotocol Hiccup (hiccup [this] "Hiccup markup"))
 
@@ -70,13 +93,17 @@
   (hiccup [_] [:span nil])
 
   H1LinkTitle
-  (hiccup [{:keys [title host]}] [:h1 [:a {:href (str "?api=" (create-link host title))} title]])
+  (hiccup
+    [{:keys [title host]}]
+    [:h1 [:a {:href (str "?api=" (create-link host title))} title]])
 
   H2Title
   (hiccup [this] [:h2 (:title this)])
 
   Link
-  (hiccup [{:keys [title host name title-attr]}] [:a {:href (str "?api=" (create-link host title) "&name=" name) :data-name name :title title-attr} title])
+  (hiccup
+    [{:keys [title host name title-attr]}]
+    [:a {:href (str "?api=" (create-link host title) "&name=" name) :title title-attr} title])
 
   js/Boolean
   (hiccup [this] [:span (str this)])
@@ -98,7 +125,9 @@
     (if (empty? this)
       [:div [:span]]
       [:table {:class "pure-table"}
-        [:tbody (for [[k v] this] ^{:key k}[:tr [:th (hiccup k)] [:td (hiccup v)]])]]))
+        [:tbody (for [[k v] this]
+                  ^{:key k}[:tr [:th (hiccup (field-title k))]
+                                [:td (hiccup v)]])]]))
 
   PersistentHashSet
   (hiccup [this]
@@ -130,7 +159,7 @@
         (hiccup (->H1LinkTitle title host))
         (hiccup entity)
         (for [[embed-title embed-xs] (:_embedded tidied)]
-          (hiccup [(->H2Title (.substring (str embed-title) 1)) ; (name :zones/1/properties) returns zones
+          (hiccup [(->H2Title (name2 embed-title))
                    (format-embedded embed-xs host)]))
         (hiccup (->H2Title "links"))
         (hiccup (format-links links host))]))
@@ -142,11 +171,12 @@
       (hiccup json)]))
 
 (defn ^:export omnom [uri name el host]
-  (go (let [analysis (:body (<! (slurp "http://localhost:3001/services/ho/analysis")))
-            ;; aug-req (filter #(:body %) analysis)
+  (go (let [[_ api] (split (:path (url/url uri)) #"/")
+            analysis (:body (<! (slurp (str "http://localhost:3001/services/" api "/analysis"))))
             rsp (<! (augmented-slurp uri name analysis))
             ;; TODO: dispatch on media type here for barfing
-            mkup (if (get http/unexceptional-status? (:status rsp))
-                   (barf (->JSONHal "hal+json") (:body rsp) host)
-                   (barf (->Error "hal+json") (:body rsp) (:status rsp)))]
+            mkup (cond
+                   (= (:status rsp) 204)                          (-> js/window .-history .back)
+                   (get http/unexceptional-status? (:status rsp)) (barf (->JSONHal "hal+json") (:body rsp) host)
+                   :else                                          (barf (->Error "hal+json") (:body rsp) (:status rsp)))]
         (set! (.-innerHTML el) (-> mkup hiccups/html)))))
