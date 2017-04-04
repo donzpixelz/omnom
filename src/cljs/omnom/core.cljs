@@ -22,24 +22,18 @@
       false
       true)))
 
-(defn- write?[x] (some #{x} #{"post" "put" "patch" "delete"}))
+(def http-methods {"get" http/get "post" http/post "put" http/put "patch" http/patch})
 
 (defn- augmented-slurp [uri name augmented-requests]
-  (println "name : " name)
-  (println "augmented requests : " augmented-requests)
   (let [xs (filter #(uri-match? (url/url (:uri %)) uri) augmented-requests)
-        ys (if name (filter #(= (lower-case (:method %)) (lower-case name)) xs) xs)]
-    (println "xs : " xs)
-    (println "filtered aug requests : " ys)
-    (if-let [aug-req (first ys)]
-      (if (some #{(lower-case (or name "na"))} #{"post" "put" "patch" "delete"})
-        (let [clj (js->clj (parse (:body aug-req)))]
-          (println "augmented request : " aug-req)
-          (http/post (:uri aug-req) {:json-params clj :with-credentials? false :headers {"Authorization" "BearerXYZ"}})) ;; TODO: add header from aug
-        (http/get uri {:with-credentials? false :headers {"Authorization" "BearerXYZ"}})
-        )
-
-      (slurp uri))))
+        ys (if name (filter #(= (lower-case (:method %)) (lower-case name)) xs) xs)
+        aug-req (first ys)
+        clj (if (:body aug-req) (js->clj (parse (:body aug-req))) nil)
+        param-base {:with-credentials? false}
+        param-headers (if (:Authorization (:headers aug-req)) (assoc param-base :headers {"Authorization" (:Authorization (:headers aug-req))}) param-base)
+        param-payload (if clj (assoc param-headers :json-params clj) param-headers)
+        m-fn (http-methods (:method aug-req))]
+    ((fn [x y] (m-fn x y)) (:uri aug-req) param-payload)))
 
 (defn- format-embedded [embedded host]
   (mapv
