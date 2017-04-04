@@ -76,8 +76,8 @@
     (for [[k v] (dissoc links :curies)]
       (let [[a b] (split (name2 k) #":")]
         (if b
-          {(field-title b) (->Link (curie-link a (:href v) links) host a (get-method links) (:title v))}
-          {(field-title k) (->Link (:href v) host a (get-method links) (:title v))})))))
+          {(field-title b) (->Link (curie-link a (:href v) links) host (get-method links) (:title v))}
+          {(field-title k) (->Link (:href v)                      host (get-method links) (:title v))})))))
 
 (defn create-link [host path]
   (url/url-encode
@@ -87,7 +87,7 @@
 
 (defrecord H2Title [title])
 
-(defrecord Link [title host rel name title-attr])
+(defrecord Link [title host name title-attr])
 
 (defprotocol Hiccup (hiccup [this] "Hiccup markup"))
 
