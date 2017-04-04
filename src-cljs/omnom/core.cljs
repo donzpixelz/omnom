@@ -42,7 +42,7 @@
           (= (lower-case name) "patch")  (http/patch (:uri aug-req) req)
           (= (lower-case name) "post")   (http/post (:uri aug-req) req)
           (= (lower-case name) "put")    (http/put (:uri aug-req) req)
-          :else             (http/get (:uri aug-req) req)))
+          :else                          (http/get (:uri aug-req) req)))
       (slurp uri))))
 
 (defn- format-embedded [embedded host]
