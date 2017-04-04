@@ -64,6 +64,7 @@
         (cond
           (get methods (lower-case (name k))) (lower-case (name k))
           (map? v)                            (find-methods v)
+          (sequential? v)                     (map #(find-methods %) v)
           (get methods (lower-case v))        (lower-case v)
           :else                               Nil))))
   (if-let [method (first (remove nil? (flatten (find-methods map))))]
