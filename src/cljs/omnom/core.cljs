@@ -29,26 +29,27 @@
       false
       true)))
 
+(def http-methods {"get" http/get "delete" http/delete "post" http/post "put" http/put "patch" http/patch})
+
 (defn- augmented-slurp [uri name augmented-requests]
   (let [xs (filter #(uri-match? (url/url (:uri %)) uri) augmented-requests)
-        ys (if name
-              (filter #(= (lower-case (:method %)) (lower-case name)) xs)
-              xs)]
-    (if-let [aug-req (first ys)]
-      (let [clj (js->clj (parse (:body aug-req)))
-            req {:json-params clj :with-credentials? false}]
-        (cond
-          (= (lower-case name) "delete") (http/delete (:uri aug-req) req)
-          (= (lower-case name) "patch")  (http/patch (:uri aug-req) req)
-          (= (lower-case name) "post")   (http/post (:uri aug-req) req)
-          (= (lower-case name) "put")    (http/put (:uri aug-req) req)
-          :else                          (http/get (:uri aug-req) req)))
-      (slurp uri))))
+        ys (if name (filter #(= (lower-case (:method %)) (lower-case name)) xs) xs)
+        aug-req (first ys)
+        clj (if (:body aug-req) (js->clj (parse (:body aug-req))) nil)
+        param-base {:with-credentials? false}
+        param-headers (if (:Authorization (:headers aug-req)) (assoc param-base :headers {"Authorization" (:Authorization (:headers aug-req))}) param-base)
+        param-qparams (if (:query-params aug-req) (assoc param-headers :query-params (:query-params aug-req)) param-headers)
+        param-payload (if clj (assoc param-qparams :json-params clj) param-qparams)
+        m-fn (http-methods (:method aug-req))]
+    (println "aug-req : " aug-req)
+    (println "param-payload : " param-payload)
+    ((fn [x y] (m-fn x y)) uri param-payload)))
 
 (defn- format-embedded [embedded host]
   (mapv
-    #(let [x (get-in % [:_links :self :href])]
-      (-> % (dissoc :_links) (assoc :href (->Link x host))))
+    #(let [t (get-in % [:_links :self :title])
+           x (get-in % [:_links :self :href])]
+      (-> % (dissoc :_links) (assoc :href (->Link x host "get" t))))
     embedded))
 
 (defn- curie-link [a b links]
@@ -59,14 +60,13 @@
   "Walks map and checks if keys or values specify an other HTTP method to 'GET'"
   [map]
   (defn find-methods [m]
-    (let [methods {"delete" "post" "put" "patch"}]
       (for [[k v] m]
         (cond
-          (get methods (lower-case (name k))) (lower-case (name k))
-          (map? v)                            (find-methods v)
-          (sequential? v)                     (mapv #(find-methods %) v)
-          (get methods (lower-case v))        (lower-case v)
-          :else                               Nil))))
+          (get http-methods (lower-case (name k))) (lower-case (name k))
+          (map? v)                                 (find-methods v)
+          (sequential? v)                          (mapv #(find-methods %) v)
+          (get http-methods (lower-case v))        (lower-case v)
+          :else                                    Nil)))
   (if-let [method (first (remove nil? (flatten (find-methods map))))]
     method
     "get"))
@@ -77,7 +77,7 @@
       (let [[a b] (split (name2 k) #":")]
         (if b
           {(field-title b) (->Link (curie-link a (:href v) links) host (get-method links) (:title v))}
-          {(field-title k) (->Link (:href v)                      host (get-method links) (:title v))})))))
+          {(field-title k) (->Link (:href v)                      host (get-method {k v}) (:title v))})))))
 
 (defn create-link [host path]
   (url/url-encode
@@ -176,11 +176,10 @@
 (defn ^:export omnom [uri name el host]
   (go (let [[_ api] (split (:path (url/url uri)) #"/")
             analysis (:body (<! (slurp (str "http://localhost:3001/services/" api "/analysis"))))
-            aug-req (filter #(:body %) analysis)
-            rsp (<! (augmented-slurp uri name aug-req))
+            rsp (<! (augmented-slurp uri name analysis))
             ;; TODO: dispatch on media type here for barfing
             mkup (cond
-                   (= (:status rsp) 204)                          (-> js/window .-history .back)
+                   (= (:status rsp) 204) [:div [:div {:class "success"} "No Content"]]
                    (get http/unexceptional-status? (:status rsp)) (barf (->JSONHal "hal+json") (:body rsp) host)
-                   :else                                          (barf (->Error "hal+json") (:body rsp) (:status rsp)))]
+                   :else (barf (->Error "hal+json") (:body rsp) (:status rsp)))]
         (set! (.-innerHTML el) (-> mkup hiccups/html)))))
