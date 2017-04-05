@@ -176,7 +176,7 @@
             rsp (<! (augmented-slurp uri name analysis))
             ;; TODO: dispatch on media type here for barfing
             mkup (cond
-                   (= (:status rsp) 204)                          (-> js/window .-history .back)
+                   (= (:status rsp) 204) [:div [:div {:class "success"} "No Content"]]
                    (get http/unexceptional-status? (:status rsp)) (barf (->JSONHal "hal+json") (:body rsp) host)
-                   :else                                          (barf (->Error "hal+json") (:body rsp) (:status rsp)))]
+                   :else (barf (->Error "hal+json") (:body rsp) (:status rsp)))]
         (set! (.-innerHTML el) (-> mkup hiccups/html)))))
