@@ -38,8 +38,11 @@
         clj (if (:body aug-req) (js->clj (parse (:body aug-req))) nil)
         param-base {:with-credentials? false}
         param-headers (if (:Authorization (:headers aug-req)) (assoc param-base :headers {"Authorization" (:Authorization (:headers aug-req))}) param-base)
-        param-payload (if clj (assoc param-headers :json-params clj) param-headers)
+        param-qparams (if (:query-params aug-req) (assoc param-headers :query-params (:query-params aug-req)) param-headers)
+        param-payload (if clj (assoc param-qparams :json-params clj) param-qparams)
         m-fn (http-methods (:method aug-req))]
+    (println "aug-req : " aug-req)
+    (println "param-payload : " param-payload)
     ((fn [x y] (m-fn x y)) uri param-payload)))
 
 (defn- format-embedded [embedded host]
