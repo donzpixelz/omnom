@@ -29,6 +29,22 @@
       false
       true)))
 
+;; Hiccup records
+
+(defrecord H1LinkTitle [title host])
+
+(defrecord H2Title [title])
+
+(defrecord Link [title host name title-attr])
+
+;; Barfing records
+
+(defrecord JSONHal [media-type])
+
+(defrecord NoContent [media-type])
+
+(defrecord Error [media-type])
+
 (def http-methods {"get" http/get "delete" http/delete "post" http/post "put" http/put "patch" http/patch})
 
 (defn- augmented-slurp [uri name augmented-requests]
@@ -82,12 +98,6 @@
 (defn create-link [host path]
   (url/url-encode
     (if (and (not (nil? path)) (.startsWith path "/")) (str host path) path)))
-
-(defrecord H1LinkTitle [title host])
-
-(defrecord H2Title [title])
-
-(defrecord Link [title host name title-attr])
 
 (defprotocol Hiccup (hiccup [this] "Hiccup markup"))
 
@@ -144,12 +154,6 @@
       [:div [:span]]
       [:ol
         (for [item this] [:li (hiccup item)])])))
-
-(defrecord JSONHal [media-type])
-
-(defrecord NoContent [media-type])
-
-(defrecord Error [media-type])
 
 (defprotocol Barf (barf [this json host] "Media Type independent markup barfing"))
 
