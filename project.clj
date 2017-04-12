@@ -1,7 +1,7 @@
 (defproject omnom "0.1.0-alpha.4-SNAPSHOT"
   :description "Finally a usable HATEOAS client in a decent language"
-  :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.clojure/clojurescript "1.8.51" :scope "provided"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [org.clojure/clojurescript "1.9.229" :scope "provided"]
                  [hiccup "1.0.5"]
                  [hiccups "0.3.0"]
                  [cheshire "5.6.1"]
