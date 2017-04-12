@@ -72,7 +72,7 @@
   (let [href (get-in (filterv #(= (:name %) a) (:curies links)) [0 :href])]
     (replace href "{rel}" b)))
 
-(defn- get-method
+(defn- http-method
   "Walks map and checks if keys or values specify an other HTTP method to 'GET'"
   [map]
   (defn find-methods [m]
@@ -92,8 +92,8 @@
     (for [[k v] (dissoc links :curies)]
       (let [[a b] (split (name2 k) #":")]
         (if b
-          {(field-title b) (->Link (curie-link a (:href v) links) host (get-method links) (:title v))}
-          {(field-title k) (->Link (:href v)                      host (get-method {k v}) (:title v))})))))
+          {(field-title b) (->Link (curie-link a (:href v) links) host (http-method links) (:title v))}
+          {(field-title k) (->Link (:href v)                      host (http-method {k v}) (:title v))})))))
 
 (defn create-link [host path]
   (url/url-encode
