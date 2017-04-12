@@ -9,11 +9,21 @@
                  [com.cemerick/url "0.1.1"]]
   :clojurescript? true
   :jar-exclusions [#"\.swp|\.swo|\.DS_Store"]
-  :plugins [[lein-cljsbuild "1.1.3"]]
+  :plugins [[lein-cljsbuild "1.1.3"]
+            [lein-figwheel "0.5.10"]]
   :hooks [leiningen.cljsbuild]
   :cljsbuild {
-    :builds [{:source-paths ["src/cljs"]
-              :compiler {:output-to "resources/public/main.js"
-                         :output-dir "resources/public"
+    :builds [{:id "dev"
+              :source-paths ["src/cljs"]
+              :figwheel true
+              :compiler {:main "omnom.main"
+                         :asset-path "js/out"
+                         :output-to "resources/public/js/main.js"
+                         :output-dir "resources/public/js/out"
+                         :optimizations :none}}
+             {:id "prod"
+              :source-paths ["src/cljs"]
+              :compiler {:output-to "resources/public/js/prod/main.js"
+                         :output-dir "resources/public/js/prod"
                          :optimizations :simple
-                         :source-map "resources/public/main.js.map"}}]})
+                         :source-map "resources/public/js/prod/main.js.map"}}]})

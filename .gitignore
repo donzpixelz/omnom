@@ -8,12 +8,14 @@ resources/public/cognitect
 resources/public/com
 resources/public/goog
 resources/public/hiccups
+resources/public/js
 resources/public/no
 resources/public/omnom
 resources/public/pathetic
 resources/public/main.js
 resources/public/main.js.map
 target
+figwheel_server.log
 pom.xml
 pom.xml.asc
 /.lein-*
