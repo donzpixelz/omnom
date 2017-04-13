@@ -24,6 +24,11 @@ A HATEOAS API browsing webapp written in Clojurescript.
 * A HAL HATEOAS API
 
 
+## API stability
+
+Omnom is very new and will be subject to considerable change until it matures closer to a 1.0.0 release.  We will not strive for backwards compatibility at this time but will preserve old releases as we move forwards with the software.
+
+
 ## Usage
 
 Figwheel build : lein figwheel dev
