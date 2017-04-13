@@ -12,9 +12,13 @@ A HATEOAS API browsing webapp written in Clojurescript.
 
 ## Features
 
+Omnom is very new - there is a great deal it does not do yet, here are some of the useful bits so far.
+
 * Sends simple GET and POST requests
 * Displays/pretty prints responses in a mixture of tables and lists
-* Builds requests using an analysis of the API specification
+* Builds requests using an analysis of the API specification effectively setting defaults to make traversing an API painless
+
+See the [issues](https://github.com/rossputin/omnom/issues) for a hint of the roadmap.
 
 
 ## Dependencies
