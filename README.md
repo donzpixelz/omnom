@@ -35,6 +35,17 @@ Omnom is very new and will be subject to considerable change until it matures cl
 
 ## Usage
 
+### Users
+
+Download the latest version.
+
+* grab a tgz file from one of the latest [releases](https://github.com/rossputin/omnom/releases)
+* unpack the tgz wherever you like
+* open index.html in a Chrome or Safari
+* point Omnom at your Protean simulation
+
+### Developers
+
 Figwheel build : lein figwheel dev
 
 Production build : lein cljsbuild once prod
