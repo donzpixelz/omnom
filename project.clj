@@ -1,5 +1,6 @@
 (defproject omnom "0.1.0-alpha.4-SNAPSHOT"
   :description "Finally a usable HATEOAS client in a decent language"
+  :source-paths ["src-cljc"]
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.229" :scope "provided"]
                  [hiccup "1.0.5"]
@@ -14,7 +15,7 @@
   :hooks [leiningen.cljsbuild]
   :cljsbuild {
     :builds [{:id "dev"
-              :source-paths ["src/cljs"]
+              :source-paths ["src-cljs"]
               :figwheel true
               :compiler {:main "omnom.main"
                          :asset-path "js/out"
@@ -22,7 +23,7 @@
                          :output-dir "resources/public/js/out"
                          :optimizations :none}}
              {:id "prod"
-              :source-paths ["src/cljs"]
+              :source-paths ["src-cljs"]
               :compiler {:output-to "resources/public/js/prod/main.js"
                          :output-dir "resources/public/js/prod"
                          :optimizations :simple

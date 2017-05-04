@@ -1,10 +1,13 @@
 (ns omnom.main
   (:require [omnom.core :as core]
+            [omnom.macro :include-macros true :refer [project-version]]
             [cemerick.url :as url]))
 
 (enable-console-print!)
 
 (defn- by-id [id] (.getElementById js/document (name id)))
+
+(set! (.-innerHTML (by-id "version")) (project-version))
 
 (let [u (url/url (-> js/window .-location .-href))]
   (if-let [api (get-in u [:query "api"])]
