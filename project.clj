@@ -1,4 +1,4 @@
-(defproject omnom "0.1.0-alpha.4-SNAPSHOT"
+(defproject omnom "0.1.0-alpha.5"
   :description "Finally a usable HATEOAS client in a decent language"
   :source-paths ["src-cljc"]
   :dependencies [[org.clojure/clojure "1.8.0"]
