@@ -7,7 +7,7 @@
 
 (defn- by-id [id] (.getElementById js/document (name id)))
 
-(set! (.-innerHTML (by-id "version")) (project-version))
+(set! (.-innerHTML (by-id "version")) (str "v" (project-version)))
 
 (let [u (url/url (-> js/window .-location .-href))]
   (if-let [api (get-in u [:query "api"])]
