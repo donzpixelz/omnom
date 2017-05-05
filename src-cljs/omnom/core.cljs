@@ -67,7 +67,9 @@
   (mapv
     #(let [t (get-in % [:_links :self :title])
            x (get-in % [:_links :self :href])]
-      (-> % (dissoc :_links) (assoc :href (->Link x host "get" t))))
+      (if x
+        (-> % (dissoc :_links) (assoc :href (->Link x host "get" t)))
+        (-> % (dissoc :_links))))
     embedded))
 
 (defn- curie-link [a b links]
@@ -176,7 +178,7 @@
         (for [[embed-title embed-xs] (:_embedded tidied)]
           (hiccup [(->H2Title (name2 embed-title))
                    (format-embedded embed-xs host)]))
-        (hiccup (->H2Title "links"))
+        (when (seq (dissoc links :curies)) (hiccup (->H2Title "links")))
         (hiccup (format-links links host))]))
 
   NoContent
