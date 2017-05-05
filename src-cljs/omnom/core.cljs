@@ -4,6 +4,8 @@
             [clojure.walk :refer [postwalk]]
             [cljs.core.async :refer [<!]]
             [cljs-http.client :as http]
+            [goog.string :as gs]
+            [goog.string.format]
             [cemerick.url :as url]
             [hiccups.runtime :as hiccupsrt])
   (:require-macros [cljs.core.async.macros :refer [go]]
@@ -101,6 +103,10 @@
 
 (defprotocol Hiccup (hiccup [this] "Hiccup markup"))
 
+(defn- includes? [xs x] (not= -1 (.indexOf (str xs) x)))
+
+(defn- barf-number [x] (if (includes? x ".") (gs/format "%.2f" x) (str x)))
+
 (extend-protocol Hiccup
   nil
   (hiccup [_] [:span nil])
@@ -122,7 +128,7 @@
   (hiccup [this] [:span (str this)])
 
   js/Number
-  (hiccup [this] [:span this])
+  (hiccup [this] [:span (barf-number this)])
 
   js/String
   (hiccup [this] [:span (escape-html this)])
