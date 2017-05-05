@@ -47,5 +47,7 @@ Download the latest version.
 ### Developers
 
 Figwheel build : lein figwheel dev
+Figwheel open : in a browser http://localhost:3449/dev.html
 
 Production build : lein cljsbuild once prod
+Production open : in a browser http://localhost:3449/index.html
