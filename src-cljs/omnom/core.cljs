@@ -185,12 +185,12 @@
   NoContent
   (barf [_ json status]
     [:div
-      [:div {:class "success"} (str "No Content - a " status " was returned")]])
+      [:div {:class "alert alert-success"} (str "No Content - a " status " was returned")]])
 
   Error
   (barf [_ json status]
     [:div
-      [:div {:class "error"} (str "Ooops a " status " was returned")]
+      [:div {:class "alert alert-danger"} (str "Ooops a " status " was returned")]
       (hiccup json)]))
 
 (defn ^:export omnom [uri name el host]
