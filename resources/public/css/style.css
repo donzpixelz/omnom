@@ -1,16 +1,36 @@
+/* Wrapper for page content to push down footer */
+html {
+  position: relative;
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+}
+
 .content {
   margin-top: 60px;
+  margin-bottom: 80px;
 }
+
 a {
   word-break: break-word;  /* For Chrome and Safari */
 }
+
 table {
   width: 100%;
 }
+
 th {
   width: 100px;
   word-break: break-word;  /* For Chrome and Safari */
   text-align: left;
+}
+
+footer {
+  background-color: #fff;
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+  padding: 10px 0px 10px 0px;
 }
 
 @media (min-width: 770px) {
