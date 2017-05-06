@@ -1,119 +1,8 @@
-/*
- * -- BASE STYLES --
- * Most of these are inherited from Base, but I want to change a few.
- */
-body {
-  line-height: 1.7em;
-  color: #7f8c8d;
-  font-size: 14px;
-}
-h1, h2, h3, h4, h5, h6, label {
-  color: #34495e;
-}
-ol, ul {
-  list-style-type: none;
-  padding-left: 0px;
-}
-li {
-  margin-top: 10px;
+.content {
+  margin-top: 60px;
 }
 a {
   word-break: break-word;  /* For Chrome and Safari */
-}
-
-.info, .success, .warning, .error, .validation {
-	border: 1px solid;
-	margin: 10px 0px;
-	padding: 15px 10px 15px 10px;
-	background-repeat: no-repeat;
-	background-position: 10px center;
-}
-.info {
-	color: #00529B;
-	background-color: #BDE5F8;
-}
-.success {
-	color: #4F8A10;
-	background-color: #DFF2BF;
-}
-.warning {
-	color: #9F6000;
-	background-color: #FEEFB3;
-	background-image: url('http://i.imgur.com/Z8q7ww7.png');
-}
-.error{
-	color: #D8000C;
-	background-color: #FFBABA;
-}
-
-/*
- * -- PURE BUTTON STYLES --
- * I want my pure-button elements to look a little different
- */
-.pure-button {
-  background-color: #1f8dd6;
-  color: white;
-  padding: 0.5em 2em;
-  border-radius: 5px;
-}
-
-/*
- * -- MENU STYLES --
- * I want to customize how my .home-menu looks at the top of the page
- */
-
-.home-menu {
-  padding: 0.5em;
-  box-shadow: 0 1px 1px rgba(0,0,0, 0.10);
-  background: #2d3e50;
-  width: 100% !important;
-}
-.home-menu .home-menu-fixed {
-  border-bottom: none;
-}
-.home-menu .home-menu-heading {
-  color: white;
-  font-weight: 400;
-  font-size: 120%;
-}
-.home-menu .home-menu-selected a {
-  color: white;
-}
-.home-menu a {
-    color: white;
-}
-.home-menu li a:hover,
-.home-menu li a:focus {
-  background: none;
-  border: none;
-  color: white;
-}
-.home-menu input {
-  width: 800px;
-}
-.home-menu .pure-menu-list {
-  float: left !important;
-}
-.home-menu .pure-menu-input {
-  float: right !important;
-}
-
-/*
- * -- CONTENT STYLES --
- * This represents the content area (everything below the blue section)
- */
-.content-wrapper {
-  /* These styles are required for the "scroll-over" effect */
-  position: absolute;
-  top: 40px;
-  width: 100%;
-  min-height: 12%;
-  z-index: 2;
-  background: white;
-}
-/* We want to give the content area some more padding */
-.content {
-  padding: 1em 1em 3em;
 }
 table {
   width: 100%;
@@ -124,57 +13,43 @@ th {
   text-align: left;
 }
 
-@media (max-width: 1300px) {
-  .home-menu input {
-    width: 800px;
+@media (min-width: 770px) {
+  nav input {
+    width: 350px !important;
   }
 }
-@media (max-width: 1200px) {
-  .home-menu input {
-    width: 700px;
+@media (min-width: 800px) {
+  nav input {
+    width: 400px !important;
   }
 }
-@media (max-width: 1100px) {
-  .home-menu input {
-    width: 600px;
+@media (min-width: 850px) {
+  nav input {
+    width: 450px !important;
   }
 }
-@media (max-width: 1000px) {
-  .home-menu input {
-    width: 500px;
+@media (min-width: 900px) {
+  nav input {
+    width: 500px !important;
   }
 }
-@media (max-width: 900px) {
-  .home-menu input {
-    width: 400px;
+@media (min-width: 950px) {
+  nav input {
+    width: 550px !important;
   }
 }
-@media (max-width: 800px) {
-  .home-menu input {
-    width: 300px;
+@media (min-width: 1000px) {
+  nav input {
+    width: 600px !important;
   }
 }
-@media (max-width: 700px) {
-  .home-menu .pure-menu-list, .home-menu .pure-menu-input {
-    float: none !important;
-  }
-  .content-wrapper {
-    top: 80px;
-  }
-  .home-menu input {
-    width: 80%;
-  }
-  button {
-    width: 20%;
+@media (min-width: 1050px) {
+  nav input {
+    width: 650px !important;
   }
 }
-@media (max-width: 480px) {
-  .home-menu input {
-    width: 70%;
-    display: inline-block !important;
-  }
-  button {
-    width: 30%;
-    margin: 0px 0px 0px !important;
+@media (min-width: 1100px) {
+  nav input {
+    width: 700px !important;
   }
 }

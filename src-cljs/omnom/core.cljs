@@ -145,7 +145,7 @@
   (hiccup [this]
     (if (empty? this)
       [:div [:span]]
-      [:table {:class "pure-table"}
+      [:table {:class "table table-bordered"}
         [:tbody (for [[k v] this]
                   ^{:key k}[:tr [:th (hiccup (field-title k))]
                                 [:td (hiccup v)]])]]))
@@ -154,13 +154,14 @@
   (hiccup [this]
     (if (empty? this)
       [:div [:span]]
-      [:ul (for [item this] [:li (hiccup item)])]))
+      [:ul {:class "list-unstyled"}
+        (for [item this] [:li (hiccup item)])]))
 
   PersistentVector
   (hiccup [this]
     (if (empty? this)
       [:div [:span]]
-      [:ol
+      [:ol {:class "list-unstyled"}
         (for [item this] [:li (hiccup item)])])))
 
 (defprotocol Barf (barf [this json host] "Media Type independent markup barfing"))
