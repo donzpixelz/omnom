@@ -1,16 +1,8 @@
 (ns omnom.protocol.barf
-  (:require [clojure.data :refer [diff]]
-            [clojure.string :refer [blank? escape join lower-case replace split]]
+  (:require [clojure.string :refer [lower-case replace split]]
             [clojure.walk :refer [postwalk]]
-            [cljs.core.async :refer [<!]]
             [cljs-http.client :as http]
-            [goog.string :as gs]
-            [goog.string.format]
-            [cemerick.url :as url]
-            [hiccups.runtime :as hiccupsrt]
-            [omnom.protocol.hiccup :as h])
-  (:require-macros [cljs.core.async.macros :refer [go]]
-                   [hiccups.core :as hiccups]))
+            [omnom.protocol.hiccup :as h]))
 
 ;; Barfing records
 

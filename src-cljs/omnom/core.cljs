@@ -1,11 +1,8 @@
 (ns omnom.core
   (:require [clojure.data :refer [diff]]
-            [clojure.string :refer [blank? escape join lower-case replace split]]
-            [clojure.walk :refer [postwalk]]
+            [clojure.string :refer [lower-case split]]
             [cljs.core.async :refer [<!]]
             [cljs-http.client :as http]
-            [goog.string :as gs]
-            [goog.string.format]
             [cemerick.url :as url]
             [hiccups.runtime :as hiccupsrt]
             [omnom.protocol.barf :as b])
@@ -44,7 +41,6 @@
   (go (let [[_ api] (split (:path (url/url uri)) #"/")
             analysis (:body (<! (slurp (str "http://localhost:3001/services/" api "/analysis"))))
             rsp (<! (augmented-slurp uri name analysis))
-            _ (println "augmented status:" (:status rsp))
             ;; TODO: dispatch on media type here for barfing)
             mkup (cond
                    (= (:status rsp) 204)                          (b/barf (b/->NoContent "hal+json") (:body rsp) (:status rsp))

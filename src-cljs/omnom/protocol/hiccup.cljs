@@ -1,15 +1,8 @@
 (ns omnom.protocol.hiccup
-  (:require [clojure.data :refer [diff]]
-            [clojure.string :refer [blank? escape join lower-case replace split]]
-            [clojure.walk :refer [postwalk]]
-            [cljs.core.async :refer [<!]]
-            [cljs-http.client :as http]
+  (:require [clojure.string :refer [escape replace]]
             [goog.string :as gs]
             [goog.string.format]
-            [cemerick.url :as url]
-            [hiccups.runtime :as hiccupsrt])
-  (:require-macros [cljs.core.async.macros :refer [go]]
-                   [hiccups.core :as hiccups]))
+            [cemerick.url :as url]))
 
 ;; Hiccup records
 
