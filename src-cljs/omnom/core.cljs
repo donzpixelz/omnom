@@ -16,11 +16,10 @@
 
 (defn- parse [json] (.parse js/JSON json))
 
-(defn- uri-match? [u1 u2]
+(defn- uri-match?
+  [u1 u2]
   (let [[left right both] (diff (rest (split u1 #"/")) (rest (split u2 #"/")))]
-    (if (or (not= (count left) (count right)) (> (- (count left) (count right)) 1))
-      false
-      true)))
+    (and (= (count left) (count right)) (<= (- (count left) (count right)) 1))))
 
 (defn- augmented-slurp
   [uri name augmented-requests]
