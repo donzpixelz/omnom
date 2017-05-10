@@ -2,26 +2,10 @@
   (:require [clojure.string :refer [lower-case replace split]]
             [clojure.walk :refer [postwalk]]
             [cljs-http.client :as http]
-            [omnom.protocol.hiccup :as h]))
+            [omnom.protocol.hiccup :as h]
+            [omnom.utils :as u]))
 
-;; Barfing records
-
-(defrecord JSONHal [media-type])
-
-(defrecord NoContent [media-type])
-
-(defrecord Error [media-type])
-
-(defprotocol Barf (barf [this json host] "Media Type independent markup barfing"))
-
-(defn- name2
-  "Changes keyword to string but respects backslashes"
-  [k]
-  (if (keyword? k) (.substring (str k) 1) k))
-
-(defn- field-title [title] (replace (name2 title) #"[-_]" " "))
-
-(def http-methods {"get" http/get "delete" http/delete "post" http/post "put" http/put "patch" http/patch})
+;; Private functions
 
 (defn- format-embedded [embedded host]
   (mapv
@@ -42,10 +26,10 @@
   (defn find-methods [m]
       (for [[k v] m]
         (cond
-          (get http-methods (lower-case (name k))) (lower-case (name k))
+          (get u/http-methods (lower-case (name k))) (lower-case (name k))
           (map? v)                                 (find-methods v)
           (sequential? v)                          (mapv #(find-methods %) v)
-          (get http-methods (lower-case v))        (lower-case v)
+          (get u/http-methods (lower-case v))        (lower-case v)
           :else                                    nil)))
   (if-let [method (first (remove nil? (flatten (find-methods map))))]
     method
@@ -54,10 +38,20 @@
 (defn- format-links [links host]
   (set
     (for [[k v] (dissoc links :curies)]
-      (let [[a b] (split (name2 k) #":")]
+      (let [[a b] (split (u/name2 k) #":")]
         (if b
-          {(field-title b) (h/->Link (curie-link a (:href v) links) host (http-method links) (:title v))}
-          {(field-title k) (h/->Link (:href v)                      host (http-method {k v}) (:title v))})))))
+          {(u/field-title b) (h/->Link (curie-link a (:href v) links) host (http-method links) (:title v))}
+          {(u/field-title k) (h/->Link (:href v)                      host (http-method {k v}) (:title v))})))))
+
+;; Barfing records
+
+(defrecord JSONHal [media-type])
+
+(defrecord NoContent [media-type])
+
+(defrecord Error [media-type])
+
+(defprotocol Barf (barf [this json host] "Media Type independent markup barfing"))
 
 (extend-protocol Barf
   JSONHal
@@ -70,7 +64,7 @@
         (h/hiccup (h/->H1LinkTitle title host))
         (h/hiccup entity)
         (for [[embed-title embed-xs] (:_embedded tidied)]
-          (h/hiccup [(h/->H2Title (name2 embed-title))
+          (h/hiccup [(h/->H2Title (u/name2 embed-title))
                    (format-embedded embed-xs host)]))
         (when (seq (dissoc links :curies)) (h/hiccup (h/->H2Title "links")))
         (h/hiccup (format-links links host))]))

@@ -1,8 +1,23 @@
 (ns omnom.protocol.hiccup
-  (:require [clojure.string :refer [escape replace]]
+  (:require [clojure.string :refer [escape]]
             [goog.string :as gs]
             [goog.string.format]
-            [cemerick.url :as url]))
+            [cemerick.url :as url]
+            [omnom.utils :as u]))
+
+;; Private functions
+
+(defn- escape-html [s]
+  (escape s {"&"  "&amp;" ">"  "&gt;" "<"  "&lt;" "\"" "&quot;"}))
+
+(defn- includes? [xs x] (not= -1 (.indexOf (str xs) x)))
+
+(defn- barf-number [x] (if (includes? x ".") (gs/format "%.2f" x) (str x)))
+
+(defn- create-link
+  [host path]
+  (url/url-encode
+    (if (and (not (nil? path)) (.startsWith path "/")) (str host path) path)))
 
 ;; Hiccup records
 
@@ -13,26 +28,6 @@
 (defrecord Link [title host name title-attr])
 
 (defprotocol Hiccup (hiccup [this] "Hiccup markup"))
-
-(defn- escape-html [s]
-  (escape s {"&"  "&amp;" ">"  "&gt;" "<"  "&lt;" "\"" "&quot;"}))
-
-(defn- name2
-  "Changes keyword to string but respects backslashes"
-  [k]
-  (if (keyword? k) (.substring (str k) 1) k))
-
-(defn- field-title [title] (replace (name2 title) #"[-_]" " "))
-
-(defn- includes? [xs x] (not= -1 (.indexOf (str xs) x)))
-
-(defn- barf-number [x] (if (includes? x ".") (gs/format "%.2f" x) (str x)))
-
-(defn create-link
-  [host path]
-  (url/url-encode
-    (if (and (not (nil? path)) (.startsWith path "/")) (str host path) path)))
-
 
 (extend-protocol Hiccup
   nil
@@ -72,7 +67,7 @@
       [:div [:span]]
       [:table {:class "table table-bordered"}
         [:tbody (for [[k v] this]
-                  ^{:key k}[:tr [:th (hiccup (field-title k))]
+                  ^{:key k}[:tr [:th (hiccup (u/field-title k))]
                                 [:td (hiccup v)]])]]))
 
   PersistentHashSet

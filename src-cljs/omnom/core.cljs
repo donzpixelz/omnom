@@ -5,9 +5,12 @@
             [cljs-http.client :as http]
             [cemerick.url :as url]
             [hiccups.runtime :as hiccupsrt]
-            [omnom.protocol.barf :as b])
+            [omnom.protocol.barf :as b]
+            [omnom.utils :as u])
   (:require-macros [cljs.core.async.macros :refer [go]]
                    [hiccups.core :as hiccups]))
+
+;; Private functions
 
 (defn- slurp [uri] (http/get uri {:with-credentials? false}))
 
@@ -19,8 +22,6 @@
       false
       true)))
 
-(def http-methods {"get" http/get "delete" http/delete "post" http/post "put" http/put "patch" http/patch})
-
 (defn- augmented-slurp
   [uri name augmented-requests]
   (let [xs (filter #(uri-match? (url/url (:uri %)) uri) augmented-requests)
@@ -31,10 +32,12 @@
         param-headers (if (:Authorization (:headers aug-req)) (assoc param-base :headers {"Authorization" (:Authorization (:headers aug-req))}) param-base)
         param-qparams (if (:query-params aug-req) (assoc param-headers :query-params (:query-params aug-req)) param-headers)
         param-payload (if clj (assoc param-qparams :json-params clj) param-qparams)
-        m-fn (http-methods (:method aug-req))]
+        m-fn (u/http-methods (:method aug-req))]
     (println "aug-req:" aug-req)
     (println "param-payload:" param-payload)
     ((fn [x y] (m-fn x y)) uri param-payload)))
+
+;; Public API
 
 (defn ^:export omnom
   [uri name el host]
