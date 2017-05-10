@@ -27,10 +27,10 @@
       (for [[k v] m]
         (cond
           (get u/http-methods (lower-case (name k))) (lower-case (name k))
-          (map? v)                                 (find-methods v)
-          (sequential? v)                          (mapv #(find-methods %) v)
+          (map? v)                                   (find-methods v)
+          (sequential? v)                            (mapv #(find-methods %) v)
           (get u/http-methods (lower-case v))        (lower-case v)
-          :else                                    nil)))
+          :else                                      nil)))
   (if-let [method (first (remove nil? (flatten (find-methods map))))]
     method
     "get"))
@@ -65,17 +65,19 @@
         (h/hiccup entity)
         (for [[embed-title embed-xs] (:_embedded tidied)]
           (h/hiccup [(h/->H2Title (u/name2 embed-title))
-                   (format-embedded embed-xs host)]))
+                     (format-embedded embed-xs host)]))
         (when (seq (dissoc links :curies)) (h/hiccup (h/->H2Title "links")))
         (h/hiccup (format-links links host))]))
 
   NoContent
   (barf [_ json status]
     [:div
-      [:div {:class "alert alert-success"} (str "No Content - a " status " was returned")]])
+      [:div {:class "alert alert-success"}
+        (str "No Content - a " status " was returned")]])
 
   Error
   (barf [_ json status]
     [:div
-      [:div {:class "alert alert-danger"} (str "Ooops a " status " was returned")]
+      [:div {:class "alert alert-danger"}
+        (str "Ooops a " status " was returned")]
       (h/hiccup json)]))

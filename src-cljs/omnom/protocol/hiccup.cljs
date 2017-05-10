@@ -44,7 +44,8 @@
   Link
   (hiccup
     [{:keys [title host name title-attr]}]
-    [:a {:href (str "?api=" (create-link host title) "&name=" name) :title title-attr} title])
+    [:a {:href (str "?api=" (create-link host title) "&name=" name)
+         :title title-attr} title])
 
   js/Boolean
   (hiccup [this] [:span (str this)])
