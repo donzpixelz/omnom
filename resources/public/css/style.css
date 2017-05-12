@@ -8,7 +8,7 @@ html {
 
 .content {
   margin-top: 60px;
-  margin-bottom: 80px;
+  margin-bottom: 100px;
 }
 
 a {
@@ -23,6 +23,22 @@ th {
   width: 100px;
   word-break: break-word;  /* For Chrome and Safari */
   text-align: left;
+}
+
+.CodeMirror {
+  display: block;
+  padding: 6px 12px;
+  line-height: 1.42857143;
+  color: #555;
+  background-color: #fff;
+  background-image: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+  -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+  -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
 }
 
 footer {
@@ -71,5 +87,30 @@ footer {
 @media (min-width: 1100px) {
   nav input {
     width: 700px !important;
+  }
+}
+@media (min-width: 1150px) {
+  nav input {
+    width: 750px !important;
+  }
+}
+@media (min-width: 1200px) {
+  nav input {
+    width: 800px !important;
+  }
+}
+@media (min-width: 1250px) {
+  nav input {
+    width: 850px !important;
+  }
+}
+@media (min-width: 1350px) {
+  nav input {
+    width: 950px !important;
+  }
+}
+@media (min-width: 1400px) {
+  nav input {
+    width: 1000px !important;
   }
 }

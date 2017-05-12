@@ -1,5 +1,5 @@
 (ns omnom.protocol.barf
-  (:require [clojure.string :refer [lower-case replace split]]
+  (:require [clojure.string :refer [lower-case replace split upper-case]]
             [clojure.walk :refer [postwalk]]
             [cljs-http.client :as http]
             [omnom.protocol.hiccup :as h]
@@ -47,11 +47,13 @@
 
 (defrecord JSONHal [media-type])
 
+(defrecord Form [media-type])
+
 (defrecord NoContent [media-type])
 
 (defrecord Error [media-type])
 
-(defprotocol Barf (barf [this json host] "Media Type independent markup barfing"))
+(defprotocol Barf (barf [this p1 p2] "Media Type independent markup barfing"))
 
 (extend-protocol Barf
   JSONHal
@@ -69,15 +71,46 @@
         (when (seq (dissoc links :curies)) (h/hiccup (h/->H2Title "links")))
         (h/hiccup (format-links links host))]))
 
+  Form
+  (barf [_ analysis host]
+    [:form
+      [:div {:class "form-group"}
+        [:label {:for "method"} "Method"]
+        [:select {:id "method" :name "method" :class "form-control"}
+                (for [{:keys [body method]} analysis]
+                  [:option {:value (str method "@@@@" body)} (upper-case method)])]]
+      [:div {:class "form-group"}
+        [:label {:for "payload"} "Body"]
+        [:textarea {:id "payload" :name "payload" :class "form-control" :rows 10} ""]]
+      [:button {:type "submit" :id "send-btn" :class "btn btn-primary pull-right"} "Send"]
+    [:img {:src "empty.gif" :onload
+"var selector = document.getElementById('method');
+var editor = CodeMirror.fromTextArea(document.getElementById('payload'), {
+  matchBrackets:     true,
+  autoCloseBrackets: true,
+  mode:              'application/json',
+  lineWrapping:      true
+});
+
+editor.getDoc().setValue(selector.value.split('@@@@')[1]);
+selector.addEventListener('change', function(){
+  editor.getDoc().setValue(selector.value.split('@@@@')[1]);
+});
+
+document.getElementById('send-btn').addEventListener('click', function(event) {
+  document.getElementById('payload').value = editor.getDoc().getValue();
+  omnom.main.post(event);
+});"}]])
+
   NoContent
   (barf [_ json status]
     [:div
       [:div {:class "alert alert-success"}
-        (str "No Content - a " status " was returned")]])
+            (str "No Content - a " status " was returned")]])
 
   Error
   (barf [_ json status]
     [:div
       [:div {:class "alert alert-danger"}
-        (str "Ooops a " status " was returned")]
+            (str "Ooops a " status " was returned")]
       (h/hiccup json)]))

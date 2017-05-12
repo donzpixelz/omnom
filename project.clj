@@ -7,7 +7,8 @@
                  [hiccups "0.3.0"]
                  [cheshire "5.6.1"]
                  [cljs-http "0.1.42"]
-                 [com.cemerick/url "0.1.1"]]
+                 [com.cemerick/url "0.1.1"]
+                 [form-juice "0.2.0"]]
   :clojurescript? true
   :jar-exclusions [#"\.swp|\.swo|\.DS_Store"]
   :plugins [[lein-cljsbuild "1.1.3"]
