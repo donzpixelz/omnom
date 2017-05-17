@@ -35,7 +35,8 @@
     uri
     (merge
       {:with-credentials? false}
-      (when-let [h (:headers aug-req)] {:headers (into {} (for [[k v] h] {(name k) v}))})
+      (-> {:headers (into {} (for [[k v] (:headers aug-req)] {(name k) v}))}
+          (assoc-in [:headers "Content-Type"] "application/json"))
       (when-let [q (:query-params aug-req)] {:query-params q})
       (when (:body aug-req) {:body submit-body}))))
 
@@ -46,7 +47,7 @@
   (go
     (let [apath (build-analysis-path uri)
           analysis (:body (<! (slurp apath)))
-          flt-anal (filter #(and (uri-match? (url/url (:uri %)) uri)
+          flt-anal (filter #(and (uri-match? (:uri %) (str host (:path uri)))
                                  (or (empty? name) (= (lower-case (:method %)) name))
                                  (or (empty? submit-method) (= (lower-case (:method %)) submit-method)))
                            analysis)
