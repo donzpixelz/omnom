@@ -23,6 +23,8 @@
 
 (defrecord H1LinkTitle [title host])
 
+(defrecord H3LinkTitle [title host])
+
 (defrecord H2Title [title])
 
 (defrecord Link [title host name title-attr])
@@ -37,6 +39,11 @@
   (hiccup
     [{:keys [title host]}]
     [:h1 [:a {:href (str "?api=" (create-link host title))} title]])
+
+  H3LinkTitle
+  (hiccup
+    [{:keys [title host]}]
+    [:h3 [:a {:href (str "?api=" (create-link host title))} title]])
 
   H2Title
   (hiccup [this] [:h2 (:title this)])

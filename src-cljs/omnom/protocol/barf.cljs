@@ -61,7 +61,7 @@
           entity (dissoc tidied :_links :_embedded)
           links (dissoc (:_links tidied) :self)]
       [:div
-        (h/hiccup (h/->H1LinkTitle title host))
+        (h/hiccup (h/->H3LinkTitle title host))
         (h/hiccup entity)
         (for [[embed-title embed-xs] (:_embedded tidied)]
           (h/hiccup [(h/->H2Title (u/name2 embed-title))
