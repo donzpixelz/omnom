@@ -26,8 +26,12 @@
 
 (defn- uri-match?
   [u1 u2]
-  (let [[left right both] (diff (rest (split u1 #"/")) (rest (split u2 #"/")))]
-    (and (= (count left) (count right)) (<= (- (count left) (count right)) 1))))
+  (println "u1:" u1)
+  (let [phs (re-seq #"\$\{([^\}]*)\}" u1)
+        _ (println phs)
+        [left right both] (diff (rest (split u1 #"/")) (rest (split u2 #"/")))]
+    (and (= (count left) (count right))
+         (= (count (filter #(not (nil? %)) left)) (count phs)))))
 
 (defn- augmented-slurp
   [uri aug-req submit-body]
