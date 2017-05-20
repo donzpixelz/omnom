@@ -20,7 +20,7 @@ table {
 }
 
 th {
-  width: 100px;
+  width: 15%;
   word-break: break-word;  /* For Chrome and Safari */
   text-align: left;
 }
