@@ -27,7 +27,7 @@
 (defn- uri-match?
   [u1 u2]
   (let [phs (re-seq #"\$\{([^\}]*)\}" u1)
-        [left right both] (diff (rest (split u1 #"/")) (rest (split u2 #"/")))]
+        [left right both] (diff (subvec (split u1 #"/") 3) (subvec (split u2 #"/") 3))]
     (and (= (count left) (count right))
          (= (count (filter #(not (nil? %)) left)) (count phs)))))
 
