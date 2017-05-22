@@ -13,7 +13,7 @@
   [submit-method submit-post]
   (let [u (url/url (-> js/window .-location .-href))]
     (if-let [api (get-in u [:query "api"])]
-      (let [api-url (url/url api)
+      (let [api-url (if (re-find #"\{\?" api) (url/url (first (split api #"\{\?"))) (url/url api))
             port (if-let [p (:port api-url)] (str ":" p) "")
             host (str (:protocol api-url) "://" (:host api-url) port)
             name (get-in u [:query "name"])]
