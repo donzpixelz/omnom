@@ -14,7 +14,7 @@
 
 (defn- slurp [uri] (http/get uri {:with-credentials? false}))
 
-(defn build-analysis-path
+(defn- build-analysis-path
   [uri]
   (let [{:keys [protocol host path]} (url/url uri)
         [_ api] (split path #"/")]
