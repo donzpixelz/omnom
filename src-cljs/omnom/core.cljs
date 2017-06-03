@@ -56,7 +56,8 @@
           num (count flt-anal)
           good? (fn [] (and (= num 1) (or (not (nil? submit-method)) (= (first methods) "get"))))
           mkup (cond
-                 (= num 0) (b/barf (b/->Error "hal+json") (str apath ": Not found") 404)
+                 (empty? analysis) (b/barf (b/->Error "hal+json") (str apath ": Not found") 404)
+                 (= num 0) (b/barf (b/->Error "hal+json") (str uri " does not match any in " analysis) 405)
                  (good?)   (let [{:keys [status body]} (<! (augmented-slurp uri (first flt-anal) submit-body))]
                              (cond
                                (= status 204)    (b/barf (b/->NoContent "hal+json") body status)
