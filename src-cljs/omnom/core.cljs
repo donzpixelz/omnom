@@ -14,7 +14,7 @@
 
 (defn- slurp [uri] (http/get uri {:with-credentials? false}))
 
-(defn- build-analysis-path
+(defn build-analysis-path
   [uri]
   (let [{:keys [protocol host path]} (url/url uri)
         [_ api] (split path #"/")]
@@ -27,7 +27,7 @@
 (defn- uri-match?
   [u1 u2]
   (let [phs (re-seq #"\$\{([^\}]*)\}" u1)
-        [left right both] (diff (subvec (split u1 #"/") 3) (subvec (split u2 #"/") 3))]
+        [left right both] (diff (rest (split u1 #"/")) (rest (split u2 #"/")))]
     (and (= (count left) (count right))
          (= (count (filter #(not (nil? %)) left)) (count phs)))))
 
@@ -37,8 +37,7 @@
     uri
     (merge
       {:with-credentials? false}
-      (-> {:headers (into {} (for [[k v] (:headers aug-req)] {(name k) v}))}
-          (assoc-in [:headers "Content-Type"] "application/json"))
+      {:headers (into {} (for [[k v] (:headers aug-req)] {(name k) v}))}
       (when-let [q (:query-params aug-req)] {:query-params q})
       (when (:body aug-req) {:body submit-body}))))
 
