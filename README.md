@@ -1,4 +1,4 @@
-![Soon to be deprecated - please see work underway](https://github.com/vox-machina/omnom)
+[Soon to be deprecated - please see work underway](https://github.com/vox-machina/omnom)
 
 # omnom
 
